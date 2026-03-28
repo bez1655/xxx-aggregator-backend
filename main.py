@@ -20,7 +20,6 @@ SITES = [
     "https://www.pornhub.com", "https://www.xvideos.com", "https://xhamster.com",
     "https://www.youporn.com", "https://spankbang.com", "https://www.eporner.com",
     "https://www.xnxx.com", "https://www.porntrex.com",
-    # Добавляй сюда остальные сайты по мере тестирования
 ]
 
 class Video(BaseModel):
@@ -51,8 +50,8 @@ def scrape_site(site: str, query: str = "hot") -> List[Dict]:
                 "duration": "10:00",
                 "id": str(random.randint(10000, 99999))
             })
-        return [v for v in videos if v["thumb"]]
-    except Exception:
+        return [v for v in videos if v.get("thumb")]
+    except:
         return []
 
 @app.get("/api/videos")
@@ -60,26 +59,17 @@ async def get_videos(query: str = Query("hot")):
     all_videos = []
     for site in SITES:
         all_videos.extend(scrape_site(site, query))
-    return {"videos": all_videos[:150], "total": len(all_videos), "source": "scraped_from_50+"}
+    return {"videos": all_videos[:120], "total": len(all_videos)}
 
 @app.post("/api/recommend")
 async def recommend(user_history: List[str] = []):
-    # AI-рекомендации без Torch (простая логика + можно позже добавить локальную модель)
-    recs = [
-        {"id": vid or f"rec_{i}", "title": f"AI Рекомендация {i+1} 🔥", "score": round(0.98 - i*0.025, 2)}
-        for i, vid in enumerate(user_history[-15:])
-    ]
-    if not recs:
-        recs = [{"id": "demo", "title": "Популярное сейчас в твоей ленте", "score": 0.95}]
-    return {"recommendations": recs}
+    recs = [{"id": vid or f"rec_{i}", "title": f"AI Рекомендация {i+1} 🔥", "score": round(0.98 - i*0.03, 2)} 
+            for i, vid in enumerate(user_history[-12:])]
+    return {"recommendations": recs or [{"id": "demo", "title": "Популярное сейчас", "score": 0.95}]}
 
 @app.get("/health")
 async def health():
-    return {
-        "status": "ok",
-        "message": "Backend работает | Скрейпинг 50+ сайтов + AI-рекомендации",
-        "python": "3.12"
-    }
+    return {"status": "ok", "message": "XXX Aggregator Backend готов!"}
 
 if __name__ == "__main__":
     import uvicorn
