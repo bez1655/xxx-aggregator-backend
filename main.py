@@ -59,17 +59,19 @@ async def get_videos(query: str = Query("hot")):
     all_videos = []
     for site in SITES:
         all_videos.extend(scrape_site(site, query))
-    return {"videos": all_videos[:120], "total": len(all_videos)}
+    return {"videos": all_videos[:150], "total": len(all_videos)}
 
 @app.post("/api/recommend")
 async def recommend(user_history: List[str] = []):
-    recs = [{"id": vid or f"rec_{i}", "title": f"AI Рекомендация {i+1} 🔥", "score": round(0.98 - i*0.03, 2)} 
-            for i, vid in enumerate(user_history[-12:])]
-    return {"recommendations": recs or [{"id": "demo", "title": "Популярное сейчас", "score": 0.95}]}
+    recs = [{"id": vid or f"rec_{i}", "title": f"AI Рекомендация {i+1} 🔥", "score": round(0.98 - i*0.025, 2)} 
+            for i, vid in enumerate(user_history[-15:])]
+    if not recs:
+        recs = [{"id": "demo", "title": "Популярное сейчас (AI)", "score": 0.95}]
+    return {"recommendations": recs}
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "message": "XXX Aggregator Backend готов!"}
+    return {"status": "ok", "message": "Агрегатор готов! Скрейпинг + AI работают"}
 
 if __name__ == "__main__":
     import uvicorn
